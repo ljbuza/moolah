@@ -12,7 +12,7 @@
 	jQuery.material.init();
     });
 
-    angular.module('moolah', ['ngRoute', 'ngResource', 'chart.js', 'cgBusy'])
+    angular.module('moolah', ['ngRoute', 'ngResource', 'ngMaterial', 'ngMessages', 'chart.js', 'cgBusy'])
 
 	.config(['$httpProvider', '$routeProvider', '$resourceProvider', 'STATIC_URL',
 		 function($httpProvider, $routeProvider, $resourceProvider, STATIC_URL) {
@@ -55,6 +55,10 @@
 
 	.factory('Purchase', ['$resource', 'API_URL', function($resource, API_URL) {
 	    return $resource('{}purchases/:id'.format(API_URL));
+	}])
+
+	.factory('Category', ['$resource', 'API_URL', function($resource, API_URL) {
+	    return $resource('{}categories/:id'.format(API_URL));
 	}])
 
 	.factory('PurchaseBalance', ['$http', 'API_URL', function($http, API_URL) {
@@ -236,32 +240,61 @@
 	    });
 	}])
 
-	.controller('DashboardController', ['Purchase', 'PurchaseBalance', 'Transaction', 'SummaryReport', function(Purchase, PurchaseBalance, Transaction, SummaryReport) {
+	.controller('DashboardController', ['Purchase', 'PurchaseBalance', 'Transaction', 'SummaryReport', 'Category', 
+		function(Purchase, PurchaseBalance, Transaction, SummaryReport, Category) {
 
 	    var self = this;
 
-	    self.reloadTransactions = function() {
-		self.transactionPromise = Transaction.query().$promise;
-		self.transactionPromise.then(function(d) {
-		    self.todaysTransactions = d;
-		    var values = d.map(function(i) { return i.amount; });
-		    self.todaysTransactionsTotal = values.reduce(function(a, b) {
-			return Number(a) + Number(b);
-		    }, 0);
+		self.getAllCategories = function() {
+			self.categoriesPromise = Category.query().$promise;
+			self.categoriesPromise.then(function(data) {
+				self.allCategories = data;
+			})
+		};
 
-		    self.totalIsPositive = self.todaysTransactionsTotal > 0;
-		});
+		self.readOnly = false;
+		self.filterSelected = true;
+		var cachedQuery;
+		self.getAllCategories();
+		self.categories = [];
+		self.querySearch = querySearch;
+
+		function querySearch (query) {
+			cachedQuery = cachedQuery || query;
+			var result = self.allCategories.filter(createFilterFor(query));
+			// var result = cachedQuery ? self.allCategories.filter(createFilterFor(cachedQuery)) : [];
+			return result;
+		}
+
+		function createFilterFor(query) {
+			var lowercaseQuery = angular.lowercase(query);
+			return function filterFn(cat) {
+				return (angular.lowercase(cat.name).indexOf(lowercaseQuery) != -1);
+			};
+		}
+
+	    self.reloadTransactions = function() {
+			self.transactionPromise = Transaction.query().$promise;
+			self.transactionPromise.then(function(d) {
+				self.todaysTransactions = d;
+				var values = d.map(function(i) { return i.amount; });
+				self.todaysTransactionsTotal = values.reduce(function(a, b) {
+				return Number(a) + Number(b);
+				}, 0);
+
+				self.totalIsPositive = self.todaysTransactionsTotal > 0;
+			});
 	    };
 
 	    self.reloadPurchases = function() {
-		self.allowancePromise = Purchase.query().$promise;
-		self.allowancePromise.then(function(d) {
-		    self.purchases = d;
-		});
-		PurchaseBalance().then(function(d) {
-		    self.purchaseBalance = d.data.balance;
-		    self.balanceIsPositive = self.purchaseBalance > 0;
-		});
+			self.allowancePromise = Purchase.query().$promise;
+			self.allowancePromise.then(function(d) {
+				self.purchases = d;
+			});
+			PurchaseBalance().then(function(d) {
+				self.purchaseBalance = d.data.balance;
+				self.balanceIsPositive = self.purchaseBalance > 0;
+			});
 	    };
 
 	    self.reloadSummary = function() {

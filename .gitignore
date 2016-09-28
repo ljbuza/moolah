@@ -1,5 +1,7 @@
 *.pyc
 *.sqlite3
+jsconfig.json
 bower
 node_modules
 prod_static
+settings.json

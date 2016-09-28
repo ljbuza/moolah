@@ -5,7 +5,7 @@
 	<div class="panel-title">Add Purchase</div>
       </div>
       <div class="panel-body">
-	<form novalidate>
+	<form name="dashForm" novalidate>
 	  <div class="form-group form-group-sm">
 	    <label for="newDescription">Description</label>
 	    <input ng-model="dashboardCtrl.newTransaction.description" type="text" class="form-control input-sm" id="newDescription"/>
@@ -14,7 +14,7 @@
 	    <div class="col-md-6">
 	      <div class="form-group form-group-sm">
 		<label for="newAmount">Amount ($)</label>
-		<input ng-model="dashboardCtrl.newTransaction.amount" type="number" id="newAmount" class="form-control"/>
+		<input name="newAmount" ng-model="dashboardCtrl.newTransaction.amount" type="number" id="newAmount" class="form-control"/>
 	      </div>
 	    </div>
 	    <div class="col-md-6">
@@ -23,6 +23,28 @@
 		<input type="checkbox" ng-model="dashboardCtrl.newTransaction.allowance" id="newAllowance" class="form-control"/>
 	      </div>
 	    </div>
+
+			<div class="col-md-6">
+	      <div class="form-group form-group-sm" ng-class="{'has-error': dashForm.category.$invalid}">
+					<label for="category">Category</label>
+					<md-contact-chips 
+					 	 ng-model="dashboardCtrl.categories"
+						 md-contacts="dashboardCtrl.querySearch($query)"
+						 md-contact-name="name"
+						 name="category"
+						 md-require-match="true"
+						 md-highlight-flags="i"
+						 filter-selected="dashboardCtrl.filterSelected"
+						 readonly="dashboardCtrl.readonly"
+						 md-removable="dashboardCtrl.removable"
+						 md-max-chips="5">
+					</md-contact-chips>
+					<div class="help-block" ng-messages="dashForm.category.$error">
+						<div ng-message="md-max-chips">Five chips maximum</div>
+					</div>
+	      </div>
+	    </div>
+		
 	  </div>
 	</form>
 	<button class="btn btn-success btn-sm" type="submit" ng-click="dashboardCtrl.submitTransaction()">Submit</button>

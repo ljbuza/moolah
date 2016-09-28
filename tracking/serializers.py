@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from models import Transaction, Allowance
+from models import Transaction, Allowance, Category
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -23,3 +23,12 @@ class AllowanceTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         exclude = ('timestamp', 'allowance')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        user = self.context['request'].user
+        return super(CategorySerializer, self).create(validated_data)
+
+    class Meta:
+        model = Category

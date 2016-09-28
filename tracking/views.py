@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
-from models import Allowance, Transaction
-from serializers import TransactionSerializer, AllowanceTransactionSerializer
+from models import Allowance, Transaction, Category
+from serializers import TransactionSerializer, AllowanceTransactionSerializer, CategorySerializer
 
 
 class TransactionViewSet(viewsets.ModelViewSet):
@@ -15,6 +15,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self, *args, **kwargs):
         return self.queryset.today()
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        return Category.objects.all()
+    # def get_queryset(self):
+        # return Category.objects.get(user=self.request.user)
 
 
 class AllowanceTransactionViewSet(viewsets.ModelViewSet):

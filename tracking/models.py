@@ -41,6 +41,15 @@ class Rate(models.Model):
                                   self.rount_amount_per_day())
 
 
+class Category(models.Model):
+    id = models.UUIDField(
+        primary_key=True, editable=False, default=uuid4, unique=True)
+    user = models.ForeignKey(User)
+    name = models.CharField(max_length=20)
+    description = models.CharField(max_length=50)
+    
+
+
 class Allowance(models.Model):
     id = models.UUIDField(
         primary_key=True, editable=False, default=uuid4, unique=True)
@@ -106,6 +115,11 @@ class TransactionQuerySet(models.QuerySet):
         return self.aggregate(models.Sum('amount'))['amount__sum'] or 0
 
 
+class TransactionCategory(models.Model):
+    transaction = models.ForeignKey('Transaction', null=False)
+    category = models.ForeignKey('Category', null=False)
+
+
 class Transaction(models.Model):
     objects = TransactionQuerySet.as_manager()
 
@@ -116,6 +130,7 @@ class Transaction(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     allowance = models.ForeignKey(Allowance, blank=True, null=True)
+    categories = models.ManyToManyField('Category', through='TransactionCategory', blank=True)
 
     def round_amount(self, place='0.01'):
         return Decimal(self.amount).quantize(Decimal(place))
